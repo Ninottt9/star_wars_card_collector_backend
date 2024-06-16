@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public class InventoryService {
     @Autowired
-    private static InventoryRepository inventoryRepository;
+    private InventoryRepository inventoryRepository;
 
     public List<Inventory> getAllInventory() {
         return inventoryRepository.findAll();
@@ -32,7 +32,7 @@ public class InventoryService {
         return null;
     }
 
-    public static void deleteInventory(Long id) {
+    public void deleteInventory(Long id) {
         inventoryRepository.deleteById(id);
     }
 }

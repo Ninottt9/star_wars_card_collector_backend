@@ -1,8 +1,9 @@
 package star_wars_card_collector.model;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.persistence.*;
 
 @Setter
 @Getter
@@ -11,8 +12,13 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
     private String nickname;
+
+    @Column(nullable = false)
     private String password;
+
     private String email;
     private String description;
 

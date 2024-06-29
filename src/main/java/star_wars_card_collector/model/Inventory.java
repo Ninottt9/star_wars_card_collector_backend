@@ -15,6 +15,8 @@ public class Inventory {
     private long id;
 
     @ElementCollection
+//    @CollectionTable(name = "inventory_names", joinColumns = @JoinColumn(name = "inventory_id"))
+    @Column(name = "names", columnDefinition = "TEXT[]")
     private List<String> names;
 
 }

@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import star_wars_card_collector.model.Inventory;
 import star_wars_card_collector.model.User;
+import star_wars_card_collector.repository.InventoryRepository;
 import star_wars_card_collector.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -28,11 +30,13 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final InventoryService inventoryService;
 
     @Autowired
-    public UserService(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder, InventoryService inventoryService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.inventoryService = inventoryService;
     }
 
     public List<User> getAllUsers() {
@@ -44,7 +48,18 @@ public class UserService implements UserDetailsService {
     }
 
     public User createUser(User user) {
+        Inventory inventory = inventoryService.createInventory();
+        user.setInventory(inventory);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    public Inventory getUserInventory(String nickname) {
+        User user = userRepository.findByNickname(nickname);
+        if (user != null) {
+            return user.getInventory();
+        }
+        return null;
     }
 
     public User getCurrentUser(String nickname) {

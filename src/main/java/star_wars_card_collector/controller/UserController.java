@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import star_wars_card_collector.model.Inventory;
 import star_wars_card_collector.model.User;
 import star_wars_card_collector.service.UserService;
 import star_wars_card_collector.util.JwtUtil;
@@ -92,5 +93,19 @@ public class UserController {
         }
 
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/inventory")
+    public ResponseEntity<Inventory> getUserInventory(@RequestHeader("Authorization") String token) {
+        // Extract the user's nickname from the JWT token
+        String jwtToken = token.substring(7);
+        String nickname = jwtUtil.extractNickname(jwtToken);
+
+        Inventory inventory = userService.getUserInventory(nickname);
+        if (inventory != null) {
+            return ResponseEntity.ok(inventory);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

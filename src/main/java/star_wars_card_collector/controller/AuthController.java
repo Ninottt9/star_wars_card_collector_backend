@@ -1,6 +1,7 @@
 package star_wars_card_collector.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,7 +39,8 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public User register(@RequestBody User user) {
-        return userService.save(user);
+    public ResponseEntity<User> register(@RequestBody User user) {
+        User createdUser = userService.createUser(user);
+        return ResponseEntity.ok(createdUser);
     }
 }

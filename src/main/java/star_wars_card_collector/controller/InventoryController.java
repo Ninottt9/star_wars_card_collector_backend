@@ -2,17 +2,25 @@ package star_wars_card_collector.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import star_wars_card_collector.model.Inventory;
+import star_wars_card_collector.model.User;
 import star_wars_card_collector.service.InventoryService;
+import star_wars_card_collector.service.UserService;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/inventories")
+@RequestMapping("/api/inventory")
 public class InventoryController {
     @Autowired
     private InventoryService inventoryService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping
     public List<Inventory> getAllInventories() {
@@ -29,11 +37,6 @@ public class InventoryController {
         }
     }
 
-    @PostMapping
-    public Inventory createInventory(@RequestBody Inventory inventory) {
-        return inventoryService.createInventory(inventory);
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<Inventory> updateInventory(@PathVariable Long id, @RequestBody Inventory inventory) {
         Inventory updatedInventory = inventoryService.updateInventory(id, inventory);
@@ -48,5 +51,18 @@ public class InventoryController {
     public ResponseEntity<Void> deleteInventory(@PathVariable Long id) {
         inventoryService.deleteInventory(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/names")
+    public List<String> getInventoryNamesForLoggedInUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.findByNickname(userDetails.getUsername());
+        System.out.println("user " + user.getInventory().getId() );
+
+        if (user != null && user.getInventory() != null) {
+            return user.getInventory().getNames();
+        } else {
+            return Collections.emptyList(); // or handle null case as needed
+        }
     }
 }

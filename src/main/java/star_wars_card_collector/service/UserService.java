@@ -7,11 +7,24 @@ import org.springframework.stereotype.Service;
 import star_wars_card_collector.model.User;
 import star_wars_card_collector.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import star_wars_card_collector.model.User;
+import star_wars_card_collector.repository.UserRepository;
+
+import java.util.List;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -52,5 +65,15 @@ public class UserService {
 
     public User findByNickname(String nickname) {
         return userRepository.findByNickname(nickname);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByNickname(username);
+        System.out.println("user: " + user);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        return new org.springframework.security.core.userdetails.User(user.getNickname(), user.getPassword(), new ArrayList<>());
     }
 }

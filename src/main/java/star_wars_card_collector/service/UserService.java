@@ -10,6 +10,7 @@ import star_wars_card_collector.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,6 +44,22 @@ public class UserService implements UserDetailsService {
     }
 
     public User createUser(User user) {
+        return userRepository.save(user);
+    }
+
+    public User getCurrentUser(String nickname) {
+        return userRepository.findByNickname(nickname);
+    }
+
+    public User updateUserProfile(String nickname, User updatedUser) {
+        User user = userRepository.findByNickname(nickname);
+        if (user == null) {
+            return null;
+        }
+        if (!updatedUser.getEmail().isEmpty())
+            user.setEmail(updatedUser.getEmail());
+        if (!updatedUser.getDescription().isEmpty())
+            user.setDescription(updatedUser.getDescription());
         return userRepository.save(user);
     }
 

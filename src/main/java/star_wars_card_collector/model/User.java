@@ -2,27 +2,35 @@ package star_wars_card_collector.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import star_wars_card_collector.model.Inventory;
 
 import javax.persistence.*;
+import java.util.List;
 
-@Setter
 @Getter
-@Entity(name = "users")
+@Setter
+@Entity
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String nickname;
+    private String username;
 
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false, unique = true)
     private String email;
+
     private String description;
 
     @ManyToOne
     @JoinColumn(name = "inventory_id")
     private Inventory inventory;
+
+    // Getters and Setters
 }
+

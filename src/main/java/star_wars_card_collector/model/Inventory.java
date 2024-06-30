@@ -4,19 +4,21 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
-@Setter
-@Getter
 @Entity
+@Table(name = "inventory")
+@Getter
+@Setter
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ElementCollection
-//    @CollectionTable(name = "inventory_names", joinColumns = @JoinColumn(name = "inventory_id"))
-    @Column(name = "names", columnDefinition = "TEXT[]")
+    @Column(name = "names")
     private List<String> names;
 
+    // Getters and Setters
 }

@@ -3,109 +3,44 @@ package star_wars_card_collector.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import star_wars_card_collector.model.Inventory;
-import star_wars_card_collector.model.User;
-import star_wars_card_collector.service.UserService;
-import star_wars_card_collector.util.JwtUtil;
+import star_wars_card_collector.repository.InventoryRepository;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserController {
-    @Autowired
-    private UserService userService;
 
     @Autowired
-    private JwtUtil jwtUtil;
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = userService.getUserById(id);
-        if (user != null) {
-            return ResponseEntity.ok(user);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        User updatedUser = userService.updateUser(id, user);
-        if (updatedUser != null) {
-            return ResponseEntity.ok(updatedUser);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String token = authorizationHeader.substring(7);
-        String nickname = jwtUtil.extractNickname(token);
-
-        User user = userService.findByNickname(nickname);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        return ResponseEntity.ok(user);
-    }
-
-    @PutMapping("/me")
-    public ResponseEntity<User> updateCurrentUser(@RequestBody User updatedUser, HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String token = authorizationHeader.substring(7);
-        String nickname = jwtUtil.extractNickname(token);
-
-        User user = userService.updateUserProfile(nickname, updatedUser);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        return ResponseEntity.ok(user);
-    }
+    private InventoryRepository inventoryRepository;
 
     @GetMapping("/inventory")
-    public ResponseEntity<Inventory> getUserInventory(@RequestHeader("Authorization") String token) {
-        // Extract the user's nickname from the JWT token
-        String jwtToken = token.substring(7);
-        String nickname = jwtUtil.extractNickname(jwtToken);
+    public ResponseEntity<?> getInventoryNames(Authentication authentication) {
+        // Get logged-in user's username
+        String username = authentication.getName();
 
-        Inventory inventory = userService.getUserInventory(nickname);
-        if (inventory != null) {
-            return ResponseEntity.ok(inventory);
-        } else {
-            return ResponseEntity.notFound().build();
+        // Fetch the user's inventory id based on the username
+        Long inventoryId = inventoryRepository.findInventoryIdByUsername(username);
+
+        if (inventoryId == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Inventory not found for user: " + username);
         }
+
+        // Fetch inventory details based on the inventoryId
+        Optional<Inventory> optionalInventory = inventoryRepository.findById(inventoryId);
+
+        if (((Optional<?>) optionalInventory).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Inventory not found with id: " + inventoryId);
+        }
+
+        // Return the names from the inventory
+        List<String> names = optionalInventory.get().getNames();
+        return ResponseEntity.ok(names);
     }
 }

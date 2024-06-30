@@ -31,6 +31,7 @@ public class User {
     @JoinColumn(name = "inventory_id")
     private Inventory inventory;
 
-    // Getters and Setters
+    @Column(nullable = false)
+    private int currency = 10;
 }
 

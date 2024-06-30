@@ -10,6 +10,7 @@ import star_wars_card_collector.model.Inventory;
 import star_wars_card_collector.model.User;
 import star_wars_card_collector.repository.InventoryRepository;
 import star_wars_card_collector.repository.UserRepository;
+import star_wars_card_collector.service.CurrencyService;
 import star_wars_card_collector.service.SwapiService;
 
 import java.util.List;
@@ -29,6 +30,9 @@ public class UserController {
 
     @Autowired
     private SwapiService swapiService;
+
+    @Autowired
+    private CurrencyService currencyService;
 
     @GetMapping("/inventory")
     public ResponseEntity<?> getInventoryNames(Authentication authentication) {
@@ -58,6 +62,26 @@ public class UserController {
     public ResponseEntity<?> pushToInventory(Authentication authentication) {
         // Get logged-in user's username
         String username = authentication.getName();
+
+        // Fetch the user based on username
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + username);
+        }
+
+        // Get the user entity
+        User user = optionalUser.get();
+
+        // Check if user has enough currency
+        int costToPush = 1; // Example cost to push to inventory
+        if (user.getCurrency() < costToPush) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insufficient currency to push to inventory.");
+        }
+
+        // Decrease user's currency
+        user.setCurrency(user.getCurrency() - costToPush);
+        // Save the updated user
+        userRepository.save(user);
 
         // Fetch the user's inventory based on username
         Optional<Inventory> optionalInventory = inventoryRepository.findByUsername(username);
@@ -94,12 +118,12 @@ public class UserController {
         // Save the updated inventory
         inventoryRepository.save(inventory);
 
-        return ResponseEntity.ok(dataToSave);
-    }
+        JSONObject response = new JSONObject();
+        response.put("status", "success");
+        response.put("data", inventory);
+        response.put("remaining", user.getCurrency());
 
-    private String generateRandomValue() {
-        // Implement your logic to generate or derive a value here
-        return UUID.randomUUID().toString(); // Example: Generate a random UUID
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/user")

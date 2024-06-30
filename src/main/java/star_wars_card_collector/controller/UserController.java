@@ -1,5 +1,6 @@
 package star_wars_card_collector.controller;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,9 +10,11 @@ import star_wars_card_collector.model.Inventory;
 import star_wars_card_collector.model.User;
 import star_wars_card_collector.repository.InventoryRepository;
 import star_wars_card_collector.repository.UserRepository;
+import star_wars_card_collector.service.SwapiService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @RestController
@@ -23,6 +26,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SwapiService swapiService;
 
     @GetMapping("/inventory")
     public ResponseEntity<?> getInventoryNames(Authentication authentication) {
@@ -63,16 +69,32 @@ public class UserController {
         // Get the inventory entity
         Inventory inventory = optionalInventory.get();
 
-        // Define the string to push (e.g., generate a random value)
-        String valueToPush = generateRandomValue();
+        int peopleCount = swapiService.getPeopleCount();
+        // Generate a random index within the range of peopleCount
+        Random random = new Random();
+        int randomIndex = random.nextInt(peopleCount);
 
-        // Push the value to the inventory names
-        inventory.getNames().add(valueToPush);
+        // Get the random name from results
+        JSONObject randomPerson = swapiService.getPersonAt(randomIndex);
+
+        JSONObject dataToSave = new JSONObject();
+        dataToSave.put("name", randomPerson.getString("name"));
+        dataToSave.put("birth_year", randomPerson.getString("birth_year"));
+        dataToSave.put("eye_color", randomPerson.getString("eye_color"));
+        dataToSave.put("gender", randomPerson.getString("gender"));
+        dataToSave.put("hair_color", randomPerson.getString("hair_color"));
+        dataToSave.put("height", randomPerson.getString("height"));
+        dataToSave.put("mass", randomPerson.getString("mass"));
+        dataToSave.put("mass", randomPerson.getString("mass"));
+        dataToSave.put("skin_color", randomPerson.getString("skin_color"));
+
+        // Push the random name to the inventory names
+        inventory.getNames().add(dataToSave.toString());
 
         // Save the updated inventory
         inventoryRepository.save(inventory);
 
-        return ResponseEntity.ok("Pushed value to inventory: " + valueToPush);
+        return ResponseEntity.ok(dataToSave);
     }
 
     private String generateRandomValue() {

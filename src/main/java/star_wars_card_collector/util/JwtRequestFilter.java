@@ -16,6 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * JWT Request Filter to intercept incoming HTTP requests and validate JWT tokens.
+ */
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
@@ -25,6 +28,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    /**
+     * Filters incoming HTTP requests to validate JWT tokens.
+     *
+     * @param request  The HTTP request to be processed.
+     * @param response The HTTP response to be generated.
+     * @param chain    The filter chain to proceed with after filtering.
+     * @throws ServletException If an exception occurs during filtering.
+     * @throws IOException      If an I/O error occurs during filtering.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {

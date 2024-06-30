@@ -2,11 +2,12 @@ package star_wars_card_collector.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import star_wars_card_collector.model.Inventory;
 
 import javax.persistence.*;
-import java.util.List;
 
+/**
+ * Represents a user entity in the application.
+ */
 @Getter
 @Setter
 @Entity
@@ -34,4 +35,3 @@ public class User {
     @Column(nullable = false)
     private int currency = 10;
 }
-

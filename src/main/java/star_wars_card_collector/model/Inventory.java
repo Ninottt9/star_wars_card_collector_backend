@@ -7,6 +7,9 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an inventory entity that holds a list of names.
+ */
 @Entity
 @Table(name = "inventory")
 @Getter
@@ -19,6 +22,4 @@ public class Inventory {
     @ElementCollection
     @Column(name = "names")
     private List<String> names;
-
-    // Getters and Setters
 }

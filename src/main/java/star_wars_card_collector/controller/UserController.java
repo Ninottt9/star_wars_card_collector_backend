@@ -15,6 +15,9 @@ import star_wars_card_collector.service.SwapiService;
 
 import java.util.*;
 
+/**
+ * Controller class that handles HTTP requests related to user operations.
+ */
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -31,71 +34,66 @@ public class UserController {
     @Autowired
     private CurrencyService currencyService;
 
+    /**
+     * Retrieves the names from the inventory of the authenticated user.
+     *
+     * @param authentication The authentication object representing the authenticated user.
+     * @return ResponseEntity with the list of names from the inventory or error message if not found.
+     */
     @GetMapping("/inventory")
     public ResponseEntity<?> getInventoryNames(Authentication authentication) {
-        // Get logged-in user's username
         String username = authentication.getName();
-
-        // Fetch the user's inventory id based on the username
         Long inventoryId = inventoryRepository.findInventoryIdByUsername(username);
 
         if (inventoryId == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Inventory not found for user: " + username);
         }
 
-        // Fetch inventory details based on the inventoryId
         Optional<Inventory> optionalInventory = inventoryRepository.findById(inventoryId);
 
-        if (((Optional<?>) optionalInventory).isEmpty()) {
+        if (optionalInventory.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Inventory not found with id: " + inventoryId);
         }
 
-        // Return the names from the inventory
         List<String> names = optionalInventory.get().getNames();
         return ResponseEntity.ok(names);
     }
 
+    /**
+     * Pushes a randomly selected Star Wars character's details to the inventory of the authenticated user.
+     *
+     * @param authentication The authentication object representing the authenticated user.
+     * @return ResponseEntity with a success message and remaining currency or error message if not found.
+     */
     @PostMapping("/pushToInventory")
     public ResponseEntity<?> pushToInventory(Authentication authentication) {
-        // Get logged-in user's username
         String username = authentication.getName();
-
-        // Fetch the user based on username
         Optional<User> optionalUser = userRepository.findByUsername(username);
+
         if (optionalUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + username);
         }
 
-        // Get the user entity
         User user = optionalUser.get();
+        int costToPush = 1;
 
-        // Check if user has enough currency
-        int costToPush = 1; // Example cost to push to inventory
         if (user.getCurrency() < costToPush) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insufficient currency to push to inventory.");
         }
 
-        // Decrease user's currency
         user.setCurrency(user.getCurrency() - costToPush);
-        // Save the updated user
         userRepository.save(user);
 
-        // Fetch the user's inventory based on username
         Optional<Inventory> optionalInventory = inventoryRepository.findByUsername(username);
 
         if (optionalInventory.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Inventory not found for user: " + username);
         }
 
-        // Get the inventory entity
         Inventory inventory = optionalInventory.get();
-
         int peopleCount = swapiService.getPeopleCount();
-        // Generate a random index within the range of peopleCount
         Random random = new Random();
         int randomIndex = random.nextInt(peopleCount);
-
-        // Get the random name from results
         JSONObject randomPerson = swapiService.getPersonAt(randomIndex);
 
         JSONObject dataToSave = new JSONObject();
@@ -106,16 +104,11 @@ public class UserController {
         dataToSave.put("hair_color", randomPerson.getString("hair_color"));
         dataToSave.put("height", randomPerson.getString("height"));
         dataToSave.put("mass", randomPerson.getString("mass"));
-        dataToSave.put("mass", randomPerson.getString("mass"));
         dataToSave.put("skin_color", randomPerson.getString("skin_color"));
 
-        // Push the random person's details to the inventory names array
         inventory.getNames().add(dataToSave.toString());
-
-        // Save the updated inventory
         inventoryRepository.save(inventory);
 
-        // Prepare the response HashMap with remaining currency
         HashMap<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("remainingCurrency", user.getCurrency());
@@ -123,40 +116,44 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Retrieves the information of the authenticated user.
+     *
+     * @param authentication The authentication object representing the authenticated user.
+     * @return ResponseEntity with user information or error message if not found.
+     */
     @GetMapping("/user")
     public ResponseEntity<?> getUserInfo(Authentication authentication) {
-        // Get logged-in user's username
         String username = authentication.getName();
-
-        // Fetch the user based on username
         Optional<User> optionalUser = userRepository.findByUsername(username);
 
         if (optionalUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + username);
         }
 
-        // Return user information
         return ResponseEntity.ok(optionalUser.get());
     }
 
+    /**
+     * Updates the information of the authenticated user.
+     *
+     * @param updatedUser    The updated User object with new information.
+     * @param authentication The authentication object representing the authenticated user.
+     * @return ResponseEntity with the updated user information or error message if not found.
+     */
     @PutMapping("/user")
     public ResponseEntity<?> updateUser(@RequestBody User updatedUser, Authentication authentication) {
-        // Get logged-in user's username
         String username = authentication.getName();
-
-        // Fetch the existing user entity
         Optional<User> optionalUser = userRepository.findByUsername(username);
 
         if (optionalUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + username);
         }
 
-        // Update user information
         User existingUser = optionalUser.get();
         existingUser.setEmail(updatedUser.getEmail());
         existingUser.setDescription(updatedUser.getDescription());
 
-        // Save the updated user
         userRepository.save(existingUser);
 
         return ResponseEntity.ok(existingUser);

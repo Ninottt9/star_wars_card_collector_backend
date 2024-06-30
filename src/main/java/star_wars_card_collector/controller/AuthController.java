@@ -18,7 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * Controller class that handles authentication and registration operations.
+ */
 @RestController
 public class AuthController {
 
@@ -37,6 +39,13 @@ public class AuthController {
     @Autowired
     private InventoryRepository inventoryRepository;
 
+    /**
+     * Authenticates a user based on username and password, generates a JWT token upon successful authentication.
+     *
+     * @param user The User object containing username and password.
+     * @return Map with a JWT token upon successful authentication.
+     * @throws Exception If authentication fails due to incorrect username or password.
+     */
     @PostMapping("/authenticate")
     public Map<String, String> createAuthenticationToken(@RequestBody User user) throws Exception {
         try {
@@ -56,9 +65,15 @@ public class AuthController {
         return response;
     }
 
+    /**
+     * Registers a new user by encrypting the password, creating a new inventory, and saving the user to the database.
+     *
+     * @param user The User object containing username, password, and optionally email and description.
+     * @return The registered User object with encoded password and assigned inventory.
+     */
     @PostMapping("/register")
     public User registerUser(@RequestBody User user) {
-        // Encode password
+        // Encode password using BCryptPasswordEncoder
         user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
 
         // Create a new empty inventory for the user
@@ -71,7 +86,7 @@ public class AuthController {
         // Set the inventory_id for the user
         user.setInventory(inventory);
 
-        // Save the user
+        // Save the user to the database
         return userRepository.save(user);
     }
 }

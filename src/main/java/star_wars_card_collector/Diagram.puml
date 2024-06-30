@@ -1,0 +1,109 @@
+@startuml
+
+package star_wars_card_collector.model {
+    class User {
+        + id: Long
+        + username: String
+        + email: String
+        + description: String
+        + inventory: Inventory
+        + currency: int
+        --
+        + User()
+        + User(username: String, email: String)
+        + getId(): Long
+        + getUsername(): String
+        + setUsername(username: String): void
+        + getEmail(): String
+        + setEmail(email: String): void
+        + getDescription(): String
+        + setDescription(description: String): void
+        + getInventory(): Inventory
+        + setInventory(inventory: Inventory): void
+        + getCurrency(): int
+        + setCurrency(currency: int): void
+    }
+
+    class Inventory {
+        + id: Long
+        + names: List<String>
+        --
+        + Inventory()
+        + Inventory(names: List<String>)
+        + getId(): Long
+        + getNames(): List<String>
+        + setNames(names: List<String>): void
+        + addName(name: String): void
+        + removeName(name: String): void
+    }
+}
+
+package star_wars_card_collector.repository {
+    interface UserRepository {
+        + findById(id: Long): Optional<User>
+        + findByUsername(username: String): Optional<User>
+    }
+
+    interface InventoryRepository {
+        + findById(id: Long): Optional<Inventory>
+        + findInventoryIdByUsername(username: String): Long
+        + findByUsername(username: String): Optional<Inventory>
+    }
+}
+
+package star_wars_card_collector.service {
+    class UserDetailsServiceImpl {
+        + loadUserByUsername(username: String): UserDetails
+    }
+
+    class SwapiService {
+        + getPersonAt(id: int): JSONObject
+        + getPeopleCount(): int
+    }
+
+    class CurrencyService {
+        + increaseCurrency(): void
+    }
+}
+
+package star_wars_card_collector.util {
+    class JwtUtil {
+        + extractUsername(token: String): String
+        + extractExpiration(token: String): Date
+        + extractClaim(token: String, claimsResolver: Function<Claims, T>): T
+        + generateToken(userDetails: UserDetails): String
+        + validateToken(token: String, userDetails: UserDetails): Boolean
+    }
+
+    class JwtRequestFilter {
+        + doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain): void
+    }
+
+    class JwtAuthenticationEntryPoint {
+        + commence(request: HttpServletRequest, response: HttpServletResponse, authException: AuthenticationException): void
+    }
+}
+
+package star_wars_card_collector.controller {
+    class AuthController {
+        + createAuthenticationToken(user: User): Map<String, String>
+        + registerUser(user: User): User
+    }
+
+    class UserController {
+        + getInventoryNames(authentication: Authentication): ResponseEntity<?>
+        + pushToInventory(authentication: Authentication): ResponseEntity<?>
+        + getUserInfo(authentication: Authentication): ResponseEntity<?>
+        + updateUser(updatedUser: User, authentication: Authentication): ResponseEntity<?>
+    }
+}
+
+package star_wars_card_collector.aspect {
+    class LoggingAspect {
+        + logBeforeServiceMethods(joinPoint: JoinPoint): void
+        + logAfterServiceMethods(joinPoint: JoinPoint, result: Object): void
+    }
+}
+
+@enduml
+

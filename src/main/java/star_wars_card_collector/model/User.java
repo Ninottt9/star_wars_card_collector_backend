@@ -27,7 +27,7 @@ public class User {
 
     private String description;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "inventory_id")
     private Inventory inventory;
 

@@ -1,0 +1,8 @@
+star_wars_card_collector
+star_wars_card_collector.aspect
+star_wars_card_collector.config
+star_wars_card_collector.controller
+star_wars_card_collector.model
+star_wars_card_collector.repository
+star_wars_card_collector.service
+star_wars_card_collector.util

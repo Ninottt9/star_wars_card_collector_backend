@@ -13,10 +13,7 @@ import star_wars_card_collector.repository.UserRepository;
 import star_wars_card_collector.service.CurrencyService;
 import star_wars_card_collector.service.SwapiService;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
@@ -112,16 +109,16 @@ public class UserController {
         dataToSave.put("mass", randomPerson.getString("mass"));
         dataToSave.put("skin_color", randomPerson.getString("skin_color"));
 
-        // Push the random name to the inventory names
+        // Push the random person's details to the inventory names array
         inventory.getNames().add(dataToSave.toString());
 
         // Save the updated inventory
         inventoryRepository.save(inventory);
 
-        JSONObject response = new JSONObject();
+        // Prepare the response HashMap with remaining currency
+        HashMap<String, Object> response = new HashMap<>();
         response.put("status", "success");
-        response.put("data", inventory);
-        response.put("remaining", user.getCurrency());
+        response.put("remainingCurrency", user.getCurrency());
 
         return ResponseEntity.ok(response);
     }
